@@ -5,8 +5,8 @@ Todo List:
 - create slide deck
 
 Schedule:
-Yasser's Availability: Wednesday, Thursday, and Friday all evenings (6pm+), Saturday all day.
-Frank's Availability: 
+- Yasser's Availability: Wednesday, Thursday, and Friday all evenings (6pm+), Saturday all day.
+- Frank's Availability: 
 
 - Due saturday, presenting sunday
 
@@ -23,8 +23,8 @@ Description:
 - Done, user can also change privacy controls in settings
 
 Instructions:
-- Download node
-- Download this repo zip, extract
+- Download node https://nodejs.org/en
+- Download our github repo zip, extract
 - run cmd, cd to project, then type: install node
 - then: npm run dev
 - open  http://localhost:3000
