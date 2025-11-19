@@ -5,11 +5,12 @@ Todo List:
 - create slide deck
 
 Schedule:
-- When shall we meet?
+Yasser's Availability: Wednesday, Thursday, and Friday all evenings (6pm+), Saturday all day.
+Frank's Availability: 
+
 - Due saturday, presenting sunday
 
-Criteria: 
-<a href="https://docs.google.com/document/d/10MTWMA11nTSyE13TyuPFa0Ue0-CDIzSkgJFHekWhNfg/edit?tab=t.b6b6c5gvinhe#heading=h.23q0e57ydvo0">open</a>
+Criteria: https://docs.google.com/document/d/10MTWMA11nTSyE13TyuPFa0Ue0-CDIzSkgJFHekWhNfg/edit?tab=t.b6b6c5gvinhe#heading=h.23q0e57ydvo0
 
 Description:
 - Scholarship essay generating app
