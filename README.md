@@ -1,40 +1,30 @@
-<img src="/public/cover.jpg" alt="Cover image representing Nim, a personal website template" width="100%" />
+Todo List:
+Create UI concept DONE
+Decide what each page looks like/what ideas we include and exclude
+Design how to integrate Claude
+create slide deck
 
-Nim is a free and open-source personal website template built with Next.js 15, React 19, Tailwind CSS v4, and Motion. Designed for developers, designers, and founders, it combines minimalism with delightful animated components powered by [Motion-Primitives](https://motion-primitives.com).
+Schedule
+When shall we meet?
+Due saturday, presenting sunday
 
-Live demo: [https://nim-fawn.vercel.app](https://nim-fawn.vercel.app)
+Criteria: <a href="https://docs.google.com/document/d/10MTWMA11nTSyE13TyuPFa0Ue0-CDIzSkgJFHekWhNfg/edit?tab=t.b6b6c5gvinhe#heading=h.23q0e57ydvo0">open</a>
 
-## Features
+Description
+- Scholarship essay generating app
+  Below is the user flow in chronological order
+- User opens dashboard, sees reccomended action/overview of analytics
+- User opens scholarships, user can add scholarships/import
+- User opens student profiles, selects the right one, gets analytics on which scholarships is best match
+- Pattern lab  analyzes all the technical stuff, like making stats on which scholarship is most relevant (uses heatmap, ngrams, correlation map)
+- FInally, user can draft essay in Draft Studio, there are draft controls etc
+- Done, user can also change privacy controls in settings
 
-- Minimal one-page portfolio layout.
-- Blog support with MDX.
-- Responsive and accessible design.
-- Easy to use
-- [Motion-Primitives](https://motion-primitives.com) for animated components.
-
-## Getting Started
-
-For detailed setup instructions, refer to the [Installation Guide](./INSTALLATION.md).
-
-```bash
-git clone https://github.com/ibelick/nim.git
-cd nim
-npm install
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## Contributing
-
-Contributions are welcome! Feel free to open issues or submit pull requests to improve Nim.
-
-## Deployment
-
-You can deploy your site to any hosting platform that supports Next.js. For the easiest deployment experience, consider using Vercel:
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fibelick%2Fnim&env=NEXT_PUBLIC_SITE_URL&project-name=nim&repository-name=nim&redirect-url=https%3A%2F%2Ftwitter.com%2Fibelick&demo-title=Nim&demo-description=Nim%20is%20a%20free%20and%20open-source%20minimal%20personal%20website%20template%20built%20with%20Next.js%2015%2C%20React%2019%2C%20and%20Motion-Primitives.&demo-url=https%3A%2F%2Fnim.vercel.app&demo-image=https%3A%2F%2Fraw.githubusercontent.com%2Fibelick%2Fnim%2Frefs%2Fheads%2Fmain%2F.github%2Fassets%2Freadme.png&teamSlug=ibelick)
-
-## About
-
-Nim is designed to make personal branding effortless and beautiful. If you enjoy it, consider sharing it and exploring [Motion-Primitives Pro](https://pro.motion-primitives.com/).
+Instructions
+Download node
+Download this repo zip, extract
+run cmd, then type install node
+then run dev
+open  http://localhost:3000
+changes in ur editor reflect almost immidiately locally
+if there are no errors, push to github and vercel will update our site automatically
