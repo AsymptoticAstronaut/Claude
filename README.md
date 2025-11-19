@@ -2,7 +2,8 @@ Todo Priority List:
 1) Create UI concept DONE
 2) Decide what each page looks like/what ideas we include and exclude (must finalize this today)
 3) Design how to integrate Claude
-4) create slide deck
+4) integrate Claude
+5) create slide deck
 
 Schedule:
 - Yasser's Availability: Wednesday, Thursday, and Friday all evenings (6pm+), Saturday all day.
