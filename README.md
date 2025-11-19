@@ -1,3 +1,5 @@
+Meeting Link: https://meet.google.com/mso-srqw-cnx
+
 Todo Priority List:
 1) Create UI concept DONE
 2) Decide what each page looks like/what ideas we include and exclude (must finalize this today)
