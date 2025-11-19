@@ -1,16 +1,17 @@
 Todo List:
-Create UI concept DONE
-Decide what each page looks like/what ideas we include and exclude
-Design how to integrate Claude
-create slide deck
+- Create UI concept DONE
+- Decide what each page looks like/what ideas we include and exclude
+- Design how to integrate Claude
+- create slide deck
 
-Schedule
-When shall we meet?
-Due saturday, presenting sunday
+Schedule:
+- When shall we meet?
+- Due saturday, presenting sunday
 
-Criteria: <a href="https://docs.google.com/document/d/10MTWMA11nTSyE13TyuPFa0Ue0-CDIzSkgJFHekWhNfg/edit?tab=t.b6b6c5gvinhe#heading=h.23q0e57ydvo0">open</a>
+Criteria: 
+<a href="https://docs.google.com/document/d/10MTWMA11nTSyE13TyuPFa0Ue0-CDIzSkgJFHekWhNfg/edit?tab=t.b6b6c5gvinhe#heading=h.23q0e57ydvo0">open</a>
 
-Description
+Description:
 - Scholarship essay generating app
   Below is the user flow in chronological order
 - User opens dashboard, sees reccomended action/overview of analytics
@@ -20,11 +21,11 @@ Description
 - FInally, user can draft essay in Draft Studio, there are draft controls etc
 - Done, user can also change privacy controls in settings
 
-Instructions
-Download node
-Download this repo zip, extract
-run cmd, then type install node
-then run dev
-open  http://localhost:3000
-changes in ur editor reflect almost immidiately locally
-if there are no errors, push to github and vercel will update our site automatically
+Instructions:
+- Download node
+- Download this repo zip, extract
+- run cmd, cd to project, then type: install node
+- then: npm run dev
+- open  http://localhost:3000
+- changes in ur editor reflect almost immidiately locally, im using vscode 
+- if there are no errors, push to github and vercel will update our site automatically
