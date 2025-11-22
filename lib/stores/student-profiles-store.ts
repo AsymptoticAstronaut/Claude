@@ -14,7 +14,9 @@ export type StudentStory = {
 export type StudentStats = {
   scholarshipsMatched: number
   draftsGenerated: number
-  avgAlignment: number // 0–100
+  avgAlignment: number
+  lastActiveAt?: string
+  topMatchIds?: string[]
 }
 
 export type StudentProfile = {
@@ -24,20 +26,60 @@ export type StudentProfile = {
   year: string
   tags: string[]
 
-  // same shape this page expects:
-  features: Record<DimensionId, number> // 0–1 importance
+  gpa?: number
+  gpaScale?: 4 | 12 | 100
+  location?: string
+  university?: string
+  campus?: string
+  degreeLevel?: 'Undergraduate' | 'Graduate' | 'College' | 'Other'
+  enrollmentStatus?: 'Full-time' | 'Part-time' | 'Co-op/PEY' | 'Other'
+  citizenshipStatus?: 'Domestic' | 'International' | 'Permanent Resident' | 'Other'
+  firstGen?: boolean
+  languages?: string[]
+  workStatus?: 'Not working' | 'Part-time' | 'Full-time'
+  financialNeedLevel?: 'Low' | 'Medium' | 'High' | 'Prefer not to say'
+  awards?: string[]
+  testScores?: Partial<{
+    sat: number
+    act: number
+    gre: number
+    gmat: number
+    toefl: number
+    ielts: number
+  }>
+
+  recommendedAlgorithms?: string[]
+
+  features: Record<DimensionId, number>
   stories: StudentStory[]
   stats: StudentStats
 }
 
-/** Seed: the 3 demo students from your current page */
 const SEED_STUDENT_PROFILES: StudentProfile[] = [
   {
     id: 's1',
-    name: 'Frank Coconut',
+    name: 'Sophie Bennett',
     program: 'Computer Engineering',
     year: '3rd year',
-    tags: ['Robotics', 'Men in STEM', 'Teaching'],
+    tags: ['Robotics', 'Mentorship', 'Teaching'],
+    gpa: 3.78,
+    gpaScale: 4,
+    location: 'Toronto, ON',
+    university: 'University of Toronto',
+    campus: 'St. George',
+    degreeLevel: 'Undergraduate',
+    enrollmentStatus: 'Full-time',
+    citizenshipStatus: 'Domestic',
+    firstGen: false,
+    languages: ['English'],
+    workStatus: 'Part-time',
+    financialNeedLevel: 'Low',
+    awards: ['Dean’s List', 'Undergrad Research Poster Award'],
+    recommendedAlgorithms: [
+      'Personality Fit Scoring',
+      'Winner-Tilted Weights',
+      'Evidence Gap Analyzer',
+    ],
     features: {
       academics: 0.82,
       leadership: 0.75,
@@ -67,14 +109,34 @@ const SEED_STUDENT_PROFILES: StudentProfile[] = [
       scholarshipsMatched: 9,
       draftsGenerated: 12,
       avgAlignment: 84,
+      lastActiveAt: new Date().toISOString(),
+      topMatchIds: [],
     },
   },
   {
     id: 's2',
-    name: 'Yasser Nootnoot',
+    name: 'Jiawen Liu',
     program: 'Health Studies & Public Policy',
     year: '2nd year',
-    tags: ['Community health', 'Refugee support', 'Advocacy'],
+    tags: ['Community health', 'Advocacy', 'Newcomer support'],
+    gpa: 3.64,
+    gpaScale: 4,
+    location: 'Vancouver, BC',
+    university: 'University of British Columbia',
+    campus: 'Vancouver',
+    degreeLevel: 'Undergraduate',
+    enrollmentStatus: 'Full-time',
+    citizenshipStatus: 'Domestic',
+    firstGen: false,
+    languages: ['English', 'Mandarin'],
+    workStatus: 'Not working',
+    financialNeedLevel: 'Medium',
+    awards: ['Community Impact Scholar Nominee'],
+    recommendedAlgorithms: [
+      'Community Impact Reframing',
+      'Consistency & Depth Scoring',
+      'Service Outcome Extractor',
+    ],
     features: {
       academics: 0.7,
       leadership: 0.8,
@@ -96,7 +158,7 @@ const SEED_STUDENT_PROFILES: StudentProfile[] = [
         id: 's2-2',
         title: 'Refugee youth mentorship circle',
         summary:
-          'Started a peer mentorship circle for refugee youth to share resources, study strategies, and mental health supports.',
+          'Started a peer mentorship circle for newcomer youth to share resources, study strategies, and mental health supports.',
         dimensionTags: ['community', 'adversity', 'leadership'],
       },
     ],
@@ -104,14 +166,34 @@ const SEED_STUDENT_PROFILES: StudentProfile[] = [
       scholarshipsMatched: 11,
       draftsGenerated: 15,
       avgAlignment: 88,
+      lastActiveAt: new Date().toISOString(),
+      topMatchIds: [],
     },
   },
   {
     id: 's3',
-    name: 'Lucia Rivera',
+    name: 'Omar Al-Haddad',
     program: 'Economics & Sociology',
     year: '1st generation · 4th year',
     tags: ['First-gen', 'Work-study', 'Equity'],
+    gpa: 3.52,
+    gpaScale: 4,
+    location: 'Ottawa, ON',
+    university: 'Carleton University',
+    campus: 'Ottawa',
+    degreeLevel: 'Undergraduate',
+    enrollmentStatus: 'Full-time',
+    citizenshipStatus: 'Domestic',
+    firstGen: true,
+    languages: ['English', 'Arabic'],
+    workStatus: 'Part-time',
+    financialNeedLevel: 'High',
+    awards: ['Access Bursary Recipient'],
+    recommendedAlgorithms: [
+      'Need-Aware Fit Scoring',
+      'Resilience Narrative Optimizer',
+      'Barrier → Action → Impact Structurer',
+    ],
     features: {
       academics: 0.75,
       leadership: 0.45,
@@ -141,13 +223,14 @@ const SEED_STUDENT_PROFILES: StudentProfile[] = [
       scholarshipsMatched: 13,
       draftsGenerated: 17,
       avgAlignment: 90,
+      lastActiveAt: new Date().toISOString(),
+      topMatchIds: [],
     },
   },
 ]
 
 type StudentProfileState = {
   profiles: StudentProfile[]
-
   addProfile: (data: Omit<StudentProfile, 'id'> & { id?: string }) => void
   updateProfile: (id: string, patch: Partial<StudentProfile>) => void
   removeProfile: (id: string) => void
@@ -158,13 +241,11 @@ export const useStudentProfileStore = create<StudentProfileState>()(
   persist(
     (set, get) => ({
       profiles: SEED_STUDENT_PROFILES,
-
       addProfile: (data) => {
         const id = data.id ?? crypto.randomUUID()
         const newProfile: StudentProfile = { ...data, id }
         set({ profiles: [...get().profiles, newProfile] })
       },
-
       updateProfile: (id, patch) => {
         set({
           profiles: get().profiles.map((p) =>
@@ -172,13 +253,11 @@ export const useStudentProfileStore = create<StudentProfileState>()(
           ),
         })
       },
-
       removeProfile: (id) => {
         set({
           profiles: get().profiles.filter((p) => p.id !== id),
         })
       },
-
       resetToSeed: () => set({ profiles: SEED_STUDENT_PROFILES }),
     }),
     {
