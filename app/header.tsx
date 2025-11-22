@@ -26,15 +26,11 @@ export function Header() {
 
   // derive page title
   const titleFromPath = (path?: string | null) => {
-    if (!path || path === '/') return 'Summary'
+    if (!path || path === '/') return 'Dashboard'
     const parts = path.split('/').filter(Boolean)
-    if (parts.length === 0) return 'Summary'
+    if (parts.length === 0) return 'Dashboard'
     const mapping: Record<string, string> = {
-      home: 'Summary',
-      experience: 'All Experience',
-      projects: 'All Projects',
-      about: 'About',
-      contact: 'Contact',
+      home: 'Dashboard'
     }
     const top = parts[0]
     if (mapping[top]) {
