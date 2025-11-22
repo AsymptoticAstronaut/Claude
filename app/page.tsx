@@ -4,6 +4,17 @@ import { useMemo, useState } from 'react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
 import { Github } from 'lucide-react'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Rectangle,
+} from 'recharts'
 
 import { Spotlight } from '@/components/ui/spotlight'
 import { Magnetic } from '@/components/ui/magnetic'
@@ -89,55 +100,65 @@ type ImprovementBlurb = {
 
 const IMPROVEMENT_BLURBS: Record<DimensionId, ImprovementBlurb> = {
   academics: {
-    headline: 'Academics is the most common signal in your scholarship pool.',
+    headline: 'Academics shows up most often in your scholarship list.',
     youHave:
-      'You already look strong here. Your profile suggests consistent performance and credible academic growth signals.',
+      'You already look strong here. Your profile suggests consistent performance and real academic growth.',
     improve:
-      'Sharpen with 1–2 concrete “proof points” (top course results, awards, publications, difficult projects). Winners usually anchor Academics with a specific moment of excellence or persistence.',
+      'Sharpen with 1–2 concrete proof points (top grades, awards, publications, difficult projects). Winners usually anchor Academics with a specific moment of excellence or persistence.',
   },
   leadership: {
-    headline: 'Leadership is heavily rewarded across this dataset.',
+    headline: 'Leadership is heavily rewarded across your scholarships.',
     youHave:
-      'You show solid leadership potential, especially through initiative and responsibility in group settings.',
+      'You show solid leadership potential, especially through initiative and responsibility in groups.',
     improve:
-      'Convert “roles” into outcomes. Add one example where you led people toward a measurable result (team shipped X, grew membership by Y, organized Z). Judges want impact, not titles.',
+      'Convert roles into outcomes. Add one example where you led people toward a measurable result (team shipped X, grew membership by Y, organized Z). Judges want impact, not titles.',
   },
   community: {
     headline: 'Community Impact appears in many scholarships you fit.',
     youHave:
       'You have meaningful community exposure, but it reads broader than it is deep.',
     improve:
-      'Pick a single project and quantify it. Winners usually show sustained commitment + measurable change (people served, hours, resources raised, policy change, etc.).',
+      'Pick a single project and quantify it. Winners usually show sustained commitment plus measurable change (people served, hours, resources raised, policy change, etc.).',
   },
   need: {
-    headline: 'Financial Need is mid-frequency, but decisive for Access awards.',
+    headline: 'Financial Need matters most for access-focused awards.',
     youHave:
-      'Your profile indicates limited financial-need signaling right now.',
+      'Your profile shows limited financial-need signaling right now.',
     improve:
       'If relevant, add context clearly and respectfully: barriers faced, costs, and how you’ve worked through them. Tie need to perseverance and future goals; avoid leaving it implicit.',
   },
   innovation: {
-    headline: 'Innovation is a high-leverage differentiator for STEM pools.',
+    headline: 'Innovation is a high-leverage differentiator in STEM pools.',
     youHave:
       'You already align well with Innovation through building, experimenting, or creating new approaches.',
     improve:
-      'Show novelty + stakes. Explain what was new, why it mattered, and what changed because of it. A short “before → after” framing is ideal.',
+      'Show novelty plus stakes. Explain what was new, why it mattered, and what changed because of it. A short “before → after” framing is ideal.',
   },
   research: {
-    headline: 'Research is less common overall, but a tiebreaker for winners.',
+    headline: 'Research is rarer, but often a tiebreaker.',
     youHave:
-      'You have strong research alignment: curiosity + evidence of real technical or scholarly work.',
+      'You have strong research alignment: curiosity and real technical or scholarly work.',
     improve:
       'Make the throughline explicit: question → method → result → why it matters. Even small projects read big if you show rigor and learning.',
   },
   adversity: {
-    headline: 'Resilience shows up strongly in winners even when not explicit.',
+    headline: 'Resilience helps winners stand out, even when not required.',
     youHave:
-      'You signal some adversity/resilience, but it isn’t yet central.',
+      'You signal some resilience, but it isn’t yet central.',
     improve:
       'Add one story where a real obstacle forced growth. Judges look for: challenge, action you took, and how it shaped your direction.',
   },
 }
+
+// Custom bar shape to kill focus outlines on SVG rects
+const NoFocusShape = (props: any) => (
+  <Rectangle
+    {...props}
+    tabIndex={-1}
+    className="outline-none focus:outline-none"
+    style={{ outline: 'none' }}
+  />
+)
 
 export default function ScholarshipDashboard(_props: ScholarshipDashboardProps) {
   const scholarships = useScholarshipStore((s) => s.scholarships)
@@ -265,10 +286,24 @@ export default function ScholarshipDashboard(_props: ScholarshipDashboardProps) 
       })
   }, [DIMENSIONS])
 
+  const improvementChartData = useMemo(() => {
+    return improvementRows.map((d) => ({
+      id: d.id,
+      label: d.label,
+      demand: d.frequency,
+      you: d.userLevel,
+      gap: d.gap,
+    }))
+  }, [improvementRows])
+
+  const handleImproveBarClick = (data: any) => {
+    if (data?.id) setSelectedImproveDimId(data.id)
+  }
+
   if (!selectedScholarship) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-200">
-        No scholarships in store. Try refreshing or resetting the store.
+        No scholarships found. Try refreshing or resetting your list.
       </div>
     )
   }
@@ -286,17 +321,17 @@ export default function ScholarshipDashboard(_props: ScholarshipDashboardProps) 
         <header className="flex items-center justify-between border-b border-zinc-800/70 px-6 py-4">
           <div className="space-y-1">
             <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-              Claude Project · Track 3
+              Scholarship Tools
             </p>
             <h1 className="text-lg font-semibold text-zinc-50 md:text-xl">
-              Scholarship Control Center
+              Your Scholarship Dashboard
             </h1>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 rounded-full border border-emerald-500/50 bg-emerald-900/20 px-3 py-1 text-xs text-emerald-200">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              <span>Claude status: Ready</span>
+              <span>System Status: Ready</span>
             </div>
 
             <Separator orientation="vertical" className="h-6 bg-zinc-700" />
@@ -327,47 +362,55 @@ export default function ScholarshipDashboard(_props: ScholarshipDashboardProps) 
             <motion.section
               variants={VARIANTS_SECTION}
               transition={TRANSITION_SECTION}
-              className="grid gap-4 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]"
+              className="grid gap-4 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]"
             >
+              {/* Overview (System Summary, smaller) */}
               <Card className="relative overflow-hidden border-zinc-800/80 bg-zinc-950/70">
                 <Spotlight
                   className="from-sky-500/30 via-sky-400/20 to-sky-300/10 blur-2xl"
                   size={120}
                 />
-                <CardHeader className="relative pb-3">
+
+                {/* Nebula ambient background */}
+                <div className="pointer-events-none absolute inset-0 z-0">
+                  <div className="absolute -top-24 -left-24 h-[260px] w-[260px] rounded-full bg-[radial-gradient(circle,rgba(45,212,191,0.35),transparent_65%)] blur-3xl opacity-60" />
+                  <div className="absolute top-6 -right-28 h-[300px] w-[300px] rounded-full bg-[radial-gradient(circle,rgba(129,140,248,0.35),transparent_66%)] blur-3xl opacity-55" />
+                  <div className="absolute bottom-[-120px] left-10 h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,rgba(217,70,239,0.32),transparent_68%)] blur-3xl opacity-55" />
+                  <div className="absolute bottom-6 right-2 h-[240px] w-[240px] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.28),transparent_70%)] blur-3xl opacity-50" />
+                </div>
+
+                <CardHeader className="relative z-10 pb-3">
                   <CardTitle className="text-sm text-zinc-50">
-                    System summary
+                    Overview
                   </CardTitle>
                   <CardDescription className="text-xs text-zinc-400">
-                    End-to-end view of scholarships, profiles, and draft performance.
+                    A quick snapshot of your scholarships and progress so far.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="relative space-y-4">
+                <CardContent className="relative z-10 space-y-4">
                   <div className="grid gap-3 sm:grid-cols-4">
-                    <KpiTile label="Scholarships analyzed" value={totalScholarships} />
-                    <KpiTile label="Student profiles" value={totalProfiles} />
-                    <KpiTile label="Drafts generated" value={totalDrafts} />
+                    <KpiTile label="Scholarships in your list" value={totalScholarships} />
+                    <KpiTile label="Profiles compared" value={totalProfiles} />
+                    <KpiTile label="Drafts created" value={totalDrafts} />
                     <KpiTile
-                      label="Avg. alignment gain"
+                      label="Average improvement"
                       value={`+${avgGain}`}
-                      subtle="pts over generic"
+                      subtle="better than a generic draft"
                       accent
                     />
                   </div>
-<div className="rounded-lg border border-cyan-500/60 bg-cyan-900/20 px-3 py-2 text-[11px] text-cyan-100 mt-5">
+                  <div className="rounded-lg border border-cyan-500/60 bg-cyan-900/20 px-3 py-2 text-[11px] text-cyan-100 mt-5">
                     <p className="mb-1 font-medium text-zinc-100">
-                      Next best action
+                      Next step
                     </p>
                     <p className="text-[11px] text-zinc-400">
-                      Two scholarships have lower tailored scores (&lt;80). Generate or
-                      refine drafts for them to close the gap versus generic
-                      applications.
+                      Two scholarships still have lower personalized scores (under 80). Create or refine drafts for those to close the gap.
                     </p>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Improvement Lab (VERTICAL-only scroll) */}
+              {/* Improvement Lab (vertical grouped bars) */}
               <Card className="relative overflow-hidden border-zinc-800/80 bg-zinc-950/70">
                 <Spotlight
                   className="from-violet-500/40 via-violet-400/20 to-amber-300/10 blur-2xl"
@@ -378,77 +421,115 @@ export default function ScholarshipDashboard(_props: ScholarshipDashboardProps) 
                     What to improve next
                   </CardTitle>
                   <CardDescription className="text-xs text-zinc-400">
-                    Click a dimension to compare scholarship demand vs your current strength.
+                    What scholarships look for vs what you currently show. Click any bar for tips.
                   </CardDescription>
                 </CardHeader>
+
                 <CardContent className="relative space-y-3 text-xs">
-         
+                  {/* prevent focus on click (outer ring) */}
+                  <div
+                    className="h-[280px] w-full outline-none focus:outline-none"
+                    onMouseDown={(e) => e.preventDefault()}
+                  >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={improvementChartData}
+                        margin={{ top: 8, right: 8, bottom: 8, left: 0 }}
+                        barCategoryGap={18}
+                        barGap={6}
+                      >
+                        <defs>
+                          {/* less-vibrant neon gradient for YOU */}
+                          <linearGradient id="youGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="rgba(45, 212, 191, 0.8)" />
+                            <stop offset="55%" stopColor="rgba(99, 102, 241, 0.78)" />
+                            <stop offset="100%" stopColor="rgba(217, 70, 239, 0.82)" />
+                          </linearGradient>
+                        </defs>
 
-         {/* Legend with dots */}
-<div className="flex items-center gap-4 text-[11px] text-zinc-400">
-  <div className="flex items-center gap-1.5">
-    {/* DEMAND (dataset) – solid neon sky */}
-    <span className="h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.8)]" />
-    <span>Demand (dataset)</span>
-  </div>
-  <div className="flex items-center gap-1.5">
-    {/* YOU (profile) – cyan → sky → fuchsia gradient */}
-    <span className="h-2 w-2 rounded-full bg-gradient-to-r from-cyan-300 via-sky-300 to-fuchsia-400 shadow-[0_0_10px_rgba(244,114,182,0.8)]" />
-    <span>You (profile)</span>
-  </div>
-</div>
+                        <CartesianGrid stroke="rgba(63,63,70,0.55)" vertical={false} />
+                        <XAxis
+                          dataKey="label"
+                          interval={0}
+                          tick={{ fill: '#e4e4e7', fontSize: 10 }}
+                          axisLine={{ stroke: 'rgba(63,63,70,0.7)' }}
+                          tickLine={false}
+                          angle={-18}
+                          textAnchor="end"
+                          height={48}
+                        />
+                        <YAxis
+                          domain={[0, maxFreq]}
+                          tick={{ fill: '#a1a1aa', fontSize: 10 }}
+                          axisLine={false}
+                          tickLine={false}
+                          width={36}
+                          label={{
+                            value: 'Importance (%)',
+                            angle: -90,
+                            position: 'insideLeft',
+                            offset: 6,
+                            fill: '#a1a1aa',
+                            fontSize: 10,
+                          }}
+                        />
+                        <Tooltip
+                          cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+                          contentStyle={{
+                            background: 'rgba(9,9,11,0.95)',
+                            border: '1px solid rgba(63,63,70,0.8)',
+                            borderRadius: 8,
+                            fontSize: 11,
+                            color: '#e4e4e7',
+                          }}
+                          labelStyle={{ color: '#a1a1aa' }}
+                          formatter={(value: any, name: any) => {
+                            if (name === 'demand') return [`${value}%`, 'Scholarship demand']
+                            if (name === 'you') return [`${value}%`, 'You']
+                            return [`${value}%`, name]
+                          }}
+                        />
+                        <Legend
+                          verticalAlign="top"
+                          height={18}
+                          formatter={(value: any) =>
+                            value === 'demand' ? 'Scholarship demand' : 'You'
+                          }
+                          wrapperStyle={{ fontSize: 11, color: '#a1a1aa' }}
+                        />
 
-{/* Clickable list, vertical scroll only */}
-<div className="max-h-[260px] overflow-y-auto overflow-x-hidden pr-1 space-y-1.5">
-  {improvementRows.map((dim) => {
-    const isActive = dim.id === selectedImproveDim
-    return (
-      <button
-        key={dim.id}
-        type="button"
-        onClick={() => setSelectedImproveDimId(dim.id)}
-        className={`w-full rounded-lg border px-2.5 py-2 text-left transition ${
-          isActive
-            ? 'border-sky-400/80 bg-zinc-900/90 ring-1 ring-sky-400/60'
-            : 'border-zinc-800/80 bg-zinc-950/80 hover:bg-zinc-900/70'
-        }`}
-      >
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-[12px] font-medium text-zinc-100">
-            {dim.label}
-          </p>
-          <div className="flex items-center gap-2 text-[10px] text-zinc-500">
-            <span>Demand {dim.frequency}%</span>
-            <span>·</span>
-            <span>You {dim.userLevel}%</span>
-            {dim.gap > 0 && (
-              <>
-                <span>·</span>
-                <span className="text-fuchsia-300">Gap {dim.gap}%</span>
-              </>
-            )}
-          </div>
-        </div>
+                        {/* Demand bars: colder muted neon indigo */}
+                        <Bar
+                          dataKey="demand"
+                          name="demand"
+                          barSize={10}
+                          radius={[6, 6, 2, 2]}
+                          fill="rgba(129, 140, 248, 0.45)"
+                          stroke="rgba(129, 140, 248, 0.85)"
+                          strokeWidth={0.6}
+                          onClick={handleImproveBarClick}
+                          shape={NoFocusShape}
+                          style={{ cursor: 'pointer', outline: 'none' }}
+                        />
 
-        {/* Two-layer bar: DEMAND (sky) under, YOU (neon gradient) over */}
-        <div className="relative mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-900">
-          {/* Demand bar */}
-          <div
-            className="absolute left-0 top-0 h-full rounded-full bg-sky-500/60"
-            style={{ width: `${(dim.frequency / maxFreq) * 100}%` }}
-          />
-          {/* You bar (gradient) */}
-          <div
-            className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-cyan-300 via-sky-300 to-fuchsia-400"
-            style={{ width: `${dim.userLevel}%` }}
-          />
-        </div>
-      </button>
-    )
-  })}
-</div>
+                        {/* You bars: neon gradient */}
+                        <Bar
+                          dataKey="you"
+                          name="you"
+                          barSize={10}
+                          radius={[6, 6, 2, 2]}
+                          fill="url(#youGradient)"
+                          stroke="rgba(217, 70, 239, 0.7)"
+                          strokeWidth={0.5}
+                          onClick={handleImproveBarClick}
+                          shape={NoFocusShape}
+                          style={{ cursor: 'pointer', outline: 'none' }}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
 
-                  {/* Blurb */}
+                  {/* Blurb updates on bar click */}
                   <div className="rounded-lg border border-violet-600/60 bg-violet-950/25 px-3 py-2 text-[11px] text-violet-100">
                     <p className="mb-1 font-medium text-violet-100">
                       {improveBlurb.headline}
@@ -482,10 +563,10 @@ export default function ScholarshipDashboard(_props: ScholarshipDashboardProps) 
                 />
                 <CardHeader className="relative pb-3">
                   <CardTitle className="text-sm text-zinc-50">
-                    Scholarship library
+                    Your scholarships
                   </CardTitle>
                   <CardDescription className="text-xs text-zinc-400">
-                    Personality tags and detected priorities per scholarship.
+                    What each scholarship values most.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="relative space-y-2">
@@ -543,10 +624,10 @@ export default function ScholarshipDashboard(_props: ScholarshipDashboardProps) 
                 />
                 <CardHeader className="relative pb-3">
                   <CardTitle className="text-sm text-zinc-50">
-                    Suggested scholarships for you
+                    Best matches for you
                   </CardTitle>
                   <CardDescription className="text-xs text-zinc-400">
-                    Ranked based on your personal weights and past-winner traits.
+                    Ranked by your fit and what past winners emphasized.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="relative space-y-3">
@@ -587,7 +668,7 @@ export default function ScholarshipDashboard(_props: ScholarshipDashboardProps) 
                                   {typeBadge(sch.type)}
                                 </Badge>
                                 <span className="text-[11px] font-medium text-emerald-300">
-                                  {overall} fit
+                                  {overall} match
                                 </span>
                               </div>
                             </div>
@@ -600,9 +681,9 @@ export default function ScholarshipDashboard(_props: ScholarshipDashboardProps) 
                             </div>
 
                             <div className="mt-1 flex items-center gap-2 text-[10px] text-zinc-500">
-                              <span>Personality: {personality}</span>
+                              <span>Your fit: {personality}</span>
                               <span>·</span>
-                              <span>Winner-pattern: {winner}</span>
+                              <span>Winner style: {winner}</span>
                             </div>
 
                             <div className="mt-1 flex flex-wrap gap-1">
@@ -631,9 +712,7 @@ export default function ScholarshipDashboard(_props: ScholarshipDashboardProps) 
                       What this means
                     </p>
                     <p>
-                      These are the scholarships where your profile naturally fits the
-                      scholarship’s personality and aligns with what past winners tend
-                      to emphasize. Click one to see its weight profile on the right.
+                      These are the scholarships where your profile naturally fits and matches what past winners tend to highlight. Click one to see why.
                     </p>
                   </div>
                 </CardContent>
@@ -647,10 +726,10 @@ export default function ScholarshipDashboard(_props: ScholarshipDashboardProps) 
                 />
                 <CardHeader className="relative pb-3">
                   <CardTitle className="text-sm text-zinc-50">
-                    Explainable fit
+                    Why this is a good match
                   </CardTitle>
                   <CardDescription className="text-xs text-zinc-400">
-                    How this scholarship’s personality weights map to your strongest story signals.
+                    How this scholarship lines up with your strengths.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="relative space-y-3 text-xs">
@@ -701,21 +780,18 @@ export default function ScholarshipDashboard(_props: ScholarshipDashboardProps) 
 
                   <div className="rounded-lg border border-emerald-500/50 bg-emerald-900/20 px-3 py-2 text-[11px] text-emerald-100 mt-5">
                     <p className="mb-1 font-medium text-emerald-100">
-                      Suggested story angle
+                      Suggested essay angle
                     </p>
                     {sortedWeights.length >= 3 && (
                       <>
                         <p className="mb-1">
-                          {`Claude recommends you foreground ${
-                            sortedWeights[0].label
-                          }, then reinforce with ${sortedWeights[1].label.toLowerCase()} and ${sortedWeights[2].label.toLowerCase()}.`}
+                          {`Lead with ${sortedWeights[0].label}, then support with ${sortedWeights[1].label.toLowerCase()} and ${sortedWeights[2].label.toLowerCase()}.`}
                         </p>
                         <p className="text-emerald-200/80">
-                          Open with a concrete example illustrating{' '}
-                          {sortedWeights[0].label.toLowerCase()}. Follow with a paragraph
-                          emphasizing {sortedWeights[1].label.toLowerCase()} and close by
-                          tying {sortedWeights[2].label.toLowerCase()} to your long-term
-                          goals.
+                          Open with a concrete story showing{' '}
+                          {sortedWeights[0].label.toLowerCase()}. Add a second example tied to{' '}
+                          {sortedWeights[1].label.toLowerCase()}, and close by connecting{' '}
+                          {sortedWeights[2].label.toLowerCase()} to your longer-term goals.
                         </p>
                       </>
                     )}
@@ -737,33 +813,33 @@ export default function ScholarshipDashboard(_props: ScholarshipDashboardProps) 
                 />
                 <CardHeader className="relative pb-3">
                   <CardTitle className="text-sm text-zinc-50">
-                    Activity timeline
+                    Recent activity
                   </CardTitle>
                   <CardDescription className="text-xs text-zinc-400">
-                    End-to-end pipeline events for the demo dataset.
+                    What you’ve done so far in this demo.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="relative space-y-3 text-xs">
                   <ul className="space-y-2">
                     <TimelineItem
                       time="12:04"
-                      label="Generated tailored draft for Community Builder Scholarship."
+                      label="Created a personalized draft for Community Builder Scholarship."
                     />
                     <TimelineItem
                       time="11:57"
-                      label="Extracted priority weights for First-Gen Access Bursary."
+                      label="Detected what the First-Gen Access Bursary cares about most."
                     />
                     <TimelineItem
                       time="11:49"
-                      label="Imported 10 new STEM scholarships and ran Pattern Lab analysis."
+                      label="Added new STEM scholarships and analyzed patterns."
                     />
                     <TimelineItem
                       time="11:32"
-                      label="Created base student profile: 3 anchor stories added."
+                      label="Built your base profile with 3 anchor stories."
                     />
                     <TimelineItem
                       time="11:20"
-                      label="Loaded demo dataset (25 scholarships, 3 profiles)."
+                      label="Loaded the demo scholarship list."
                     />
                   </ul>
                 </CardContent>
@@ -776,32 +852,31 @@ export default function ScholarshipDashboard(_props: ScholarshipDashboardProps) 
                 />
                 <CardHeader className="relative pb-2">
                   <CardTitle className="text-sm text-zinc-50">
-                    Claude insight capsule
+                    Key insights
                   </CardTitle>
                   <CardDescription className="text-xs text-zinc-400">
-                    High-level guidance derived from pattern and draft analysis.
+                    High-level guidance based on your scholarship list.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="relative space-y-3 text-xs">
                   <div className="rounded-lg border border-zinc-800/80 bg-zinc-950/90 px-3 py-2 text-[11px] text-zinc-300">
                     <p className="mb-1 font-medium text-zinc-100">
-                      Portfolio-level guidance
+                      Overall guidance
                     </p>
                     <p>
-                      {`Across this dataset, ${topDimension?.label.toLowerCase() ?? 'academics'} appears more often than traditional GPA language. Applications that open with a concrete story about impact tend to align best with the detected patterns.`}
+                      {`Across your scholarships, ${topDimension?.label.toLowerCase() ?? 'academics'} comes up most often. Applications that open with a concrete story of impact tend to align best with what these scholarships reward.`}
                     </p>
                   </div>
 
-                  <div className="rounded-lg border border-sky-600/60 bg-sky-900/20 px-3 py-2 text-[11px] text-sky-100">
-                    <p className="mb-1 font-medium text-sky-100">
-                      Demo callout
-                    </p>
-                    <p>
-                      In your live demo, highlight how the same base student story can be
-                      reframed for a Merit scholarship and a Community scholarship using
-                      these weight profiles.
-                    </p>
-                  </div>
+<div className="rounded-lg border border-sky-600/60 bg-sky-900/20 px-3 py-2 text-[11px] text-sky-100">
+  <p className="mb-1 font-medium text-sky-100">
+    Advisory
+  </p>
+  <p>
+    Many scholarships reward applicants who adapt their stories to highlight the traits most valued by each program. Reviewing the weight profiles helps you decide which strengths to emphasize in each application.
+  </p>
+</div>
+
                 </CardContent>
               </Card>
             </motion.section>
