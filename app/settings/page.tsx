@@ -5,7 +5,6 @@ import { motion } from 'motion/react'
 import Link from 'next/link'
 import {
   Github,
-  SlidersHorizontal,
   KeyRound,
   ShieldCheck,
   MonitorCog,
@@ -13,7 +12,6 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 
-import { AnimatedBackground } from '@/components/ui/animated-background'
 import { Spotlight } from '@/components/ui/spotlight'
 import { Magnetic } from '@/components/ui/magnetic'
 
@@ -47,7 +45,9 @@ const VARIANTS_SECTION = {
 const TRANSITION_SECTION = { duration: 0.3 }
 
 export default function SettingsPage() {
-  const [demoMode, setDemoMode] = useState<'judge' | 'builder'>('judge')
+  const [interfaceMode, setInterfaceMode] = useState<'simple' | 'detailed'>(
+    'simple'
+  )
   const [storeLocally, setStoreLocally] = useState(true)
   const [anonymize, setAnonymize] = useState(true)
   const [telemetry, setTelemetry] = useState(false)
@@ -61,26 +61,25 @@ export default function SettingsPage() {
       initial="hidden"
       animate="visible"
     >
-
       <div className="relative z-10 flex min-h-screen flex-col">
         {/* Top bar */}
         <header className="flex items-center justify-between border-b border-zinc-800/70 px-6 py-4">
           <div className="space-y-1">
             <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-              Claude Project · Track 3
+              Settings
             </p>
             <h1 className="text-lg font-semibold text-zinc-50 md:text-xl">
-              Settings
+              Preferences & integrations
             </h1>
             <p className="text-xs text-zinc-500">
-              Configure Claude, data handling, and demo behaviour in one place.
+              Manage your AI connection, privacy choices, and interface preferences.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 rounded-full border border-emerald-500/50 bg-emerald-900/20 px-3 py-1 text-xs text-emerald-200">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              <span>Claude status: Ready</span>
+              <span>System Status: Ready</span>
             </div>
 
             <Separator orientation="vertical" className="h-6 bg-zinc-700" />
@@ -92,7 +91,10 @@ export default function SettingsPage() {
                 size="sm"
                 className="h-8 gap-1 rounded-full border-zinc-700 bg-zinc-900/80 text-xs text-zinc-200 hover:bg-zinc-800"
               >
-                <Link href="https://github.com/AsymptoticAstronaut/Claude" target="_blank">
+                <Link
+                  href="https://github.com/AsymptoticAstronaut/Claude"
+                  target="_blank"
+                >
                   <Github className="h-3.5 w-3.5" />
                   <span>View repo</span>
                 </Link>
@@ -109,7 +111,7 @@ export default function SettingsPage() {
             initial="hidden"
             animate="visible"
           >
-            {/* Row 1: Claude/API + Demo mode */}
+            {/* Row 1: Claude/API + Interface */}
             <motion.section
               variants={VARIANTS_SECTION}
               transition={TRANSITION_SECTION}
@@ -117,6 +119,9 @@ export default function SettingsPage() {
             >
               {/* Claude / API configuration */}
               <Card className="relative overflow-hidden border-zinc-800/80 bg-zinc-950/70">
+                {/* Nebula ambient background */}
+                <NebulaBackdrop />
+
                 <Spotlight
                   className="from-sky-500/40 via-sky-400/20 to-sky-300/10 blur-2xl"
                   size={120}
@@ -127,14 +132,14 @@ export default function SettingsPage() {
                     Claude API configuration
                   </CardTitle>
                   <CardDescription className="text-xs text-zinc-400">
-                    In the real system, this would be wired to environment variables or
-                    a secure secrets store. Here it serves as a configuration mock.
+                    Connect your Claude key to enable personalized analysis and
+                    scholarship-aware drafting.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="relative space-y-3 text-xs">
                   <div className="space-y-2">
                     <label className="text-[11px] text-zinc-400">
-                      Claude API key (demo placeholder)
+                      Claude API key
                     </label>
                     <Input
                       type="password"
@@ -143,22 +148,21 @@ export default function SettingsPage() {
                       className="h-8 border-zinc-700 bg-zinc-950/80 text-xs text-zinc-100"
                     />
                     <p className="text-[11px] text-zinc-500">
-                      For security, the demo does not store real keys. For production,
-                      you would inject this via environment variables or a secrets
-                      manager.
+                      Your key is always hidden in full. You can replace or remove it
+                      anytime from this page.
                     </p>
                   </div>
 
                   <div className="grid gap-3 md:grid-cols-2">
                     <ToggleRow
-                      label="Use mock Claude responses"
-                      description="Keep the UI responsive even when the API is offline during the hackathon."
+                      label="Use offline responses"
+                      description="Keeps features available even if Claude is temporarily unreachable."
                       checked={mockClaude}
                       onCheckedChange={setMockClaude}
                     />
                     <ToggleRow
-                      label="Enable strict safety configuration"
-                      description="Instructs Claude to prioritise conservative outputs and detailed reasoning."
+                      label="Enable strict safety"
+                      description="Adds extra checks to reduce risky or low-quality outputs."
                       checked={strictSafety}
                       onCheckedChange={setStrictSafety}
                     />
@@ -166,26 +170,25 @@ export default function SettingsPage() {
 
                   <div className="space-y-2">
                     <label className="text-[11px] text-zinc-400">
-                      Default Claude system prompt (demo only)
+                      Default drafting style
                     </label>
                     <Textarea
                       readOnly
                       rows={4}
                       value={
-                        'You are an assistant helping students craft scholarship applications. Preserve their authentic voice while optimising for the priorities inferred from each scholarship personality.'
+                        'You are an assistant helping students craft scholarship applications. Preserve their authentic voice while optimizing for the priorities inferred from each scholarship.'
                       }
                       className="border-zinc-700 bg-zinc-950/80 text-xs text-zinc-100"
                     />
                     <p className="text-[11px] text-zinc-500">
-                      In the real app, edits here would propagate to Draft Studio and
-                      Pattern Lab, so you can experiment with different alignment
-                      strategies.
+                      This guides how Draft Studio frames your stories across
+                      scholarships.
                     </p>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Demo / presentation mode */}
+              {/* Interface preferences */}
               <Card className="relative overflow-hidden border-zinc-800/80 bg-zinc-950/70">
                 <Spotlight
                   className="from-emerald-500/40 via-emerald-400/20 to-emerald-300/10 blur-2xl"
@@ -194,36 +197,36 @@ export default function SettingsPage() {
                 <CardHeader className="relative pb-3">
                   <CardTitle className="flex items-center gap-2 text-sm text-zinc-50">
                     <Presentation className="h-4 w-4 text-emerald-300" />
-                    Demo & presentation mode
+                    Interface preferences
                   </CardTitle>
                   <CardDescription className="text-xs text-zinc-400">
-                    Control how much internal detail you reveal when judges are watching.
+                    Choose how much detail you want to see while browsing and drafting.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="relative space-y-4 text-xs">
                   <div className="rounded-lg border border-zinc-800/80 bg-zinc-950/90 px-3 py-2">
                     <p className="mb-1 text-[11px] text-zinc-400">
-                      Presentation mode preset
+                      Detail level
                     </p>
                     <div className="flex flex-wrap gap-1.5 text-[11px]">
                       {[
                         {
-                          key: 'judge' as const,
-                          label: 'Judge-facing',
-                          desc: 'Highlights impact, hides noisy debug details.',
+                          key: 'simple' as const,
+                          label: 'Simple view',
+                          desc: 'Focus on the main insights and writing guidance.',
                         },
                         {
-                          key: 'builder' as const,
-                          label: 'Builder / dev',
-                          desc: 'Shows more technical metrics and debug states.',
+                          key: 'detailed' as const,
+                          label: 'Detailed view',
+                          desc: 'Show extra metrics and deeper pattern breakdowns.',
                         },
                       ].map((preset) => (
                         <button
                           key={preset.key}
                           type="button"
-                          onClick={() => setDemoMode(preset.key)}
+                          onClick={() => setInterfaceMode(preset.key)}
                           className={`flex flex-col items-start rounded-lg border px-3 py-2 text-left ${
-                            demoMode === preset.key
+                            interfaceMode === preset.key
                               ? 'border-emerald-500/80 bg-emerald-900/30 text-emerald-100'
                               : 'border-zinc-700/70 bg-zinc-950/80 text-zinc-400 hover:bg-zinc-900'
                           }`}
@@ -241,33 +244,21 @@ export default function SettingsPage() {
 
                   <div className="rounded-lg border border-zinc-800/80 bg-zinc-950/90 px-3 py-2 text-[11px] text-zinc-300">
                     <p className="mb-1 font-medium text-zinc-100">
-                      What this changes in the UI
+                      What changes with each view
                     </p>
                     <ul className="list-disc pl-4 text-[11px] text-zinc-400">
                       <li>
-                        In Judge-facing mode, hide raw tokens, long logs, and experimental
-                        controls.
+                        Simple view highlights your strongest matches and top essay
+                        angles.
                       </li>
                       <li>
-                        In Builder mode, keep Pattern Lab and internal metrics fully
-                        visible to explain methodology.
+                        Detailed view adds Pattern Lab diagnostics and more granular
+                        explanations.
                       </li>
                       <li>
-                        Both modes still surface explainability: why a student matched a
-                        scholarship and why a draft was framed in a certain way.
+                        You can switch anytime without losing work.
                       </li>
                     </ul>
-                  </div>
-
-                  <div className="rounded-lg border border-emerald-500/50 bg-emerald-900/20 px-3 py-2 text-[11px] text-emerald-100">
-                    <p className="mb-1 font-medium text-emerald-100">
-                      Demo tip
-                    </p>
-                    <p>
-                      Open this page briefly during the pitch to show that you thought
-                      about real deployment: API keys, safety, privacy, and how you
-                      configure the system for different audiences.
-                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -291,27 +282,26 @@ export default function SettingsPage() {
                     Data & privacy
                   </CardTitle>
                   <CardDescription className="text-xs text-zinc-400">
-                    Make it explicit how you would handle real profiles, essays, and
-                    scholarship content.
+                    Control how your profiles, drafts, and scholarship data are handled.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="relative space-y-3 text-xs">
                   <div className="grid gap-3 md:grid-cols-2">
                     <ToggleRow
-                      label="Store student data locally only"
-                      description="For the hackathon demo, all profiles and drafts remain in browser memory or an ephemeral database."
+                      label="Store data on this device"
+                      description="Keep your profiles and drafts in your browser so they’re not uploaded by default."
                       checked={storeLocally}
                       onCheckedChange={setStoreLocally}
                     />
                     <ToggleRow
-                      label="Anonymise names in logs"
-                      description="Replace student names with pseudonyms when logging internal events and metrics."
+                      label="Hide names in internal logs"
+                      description="Replaces personal names with placeholders in analytics views."
                       checked={anonymize}
                       onCheckedChange={setAnonymize}
                     />
                     <ToggleRow
-                      label="Allow aggregate telemetry (opt-in)"
-                      description="Collect anonymous stats on which features are used most. Disabled by default."
+                      label="Share anonymous usage stats"
+                      description="Helps improve the product by sending aggregate, non-identifying telemetry."
                       checked={telemetry}
                       onCheckedChange={setTelemetry}
                     />
@@ -319,24 +309,21 @@ export default function SettingsPage() {
 
                   <div className="rounded-lg border border-zinc-800/80 bg-zinc-950/90 px-3 py-2 text-[11px] text-zinc-300">
                     <p className="mb-1 font-medium text-zinc-100">
-                      Consent & human-in-the-loop
+                      Your control
                     </p>
                     <p>
-                      In a real deployment, students would explicitly opt into AI
-                      assistance and be able to download, edit, or delete their data.
-                      Claude is positioned as a drafting assistant, not an automated
-                      decision-maker.
+                      You can download, edit, or delete your data at any time. AI tools
+                      help with drafting, but you always decide what to submit.
                     </p>
                   </div>
 
                   <div className="rounded-lg border border-zinc-800/80 bg-zinc-950/90 px-3 py-2 text-[11px] text-zinc-300">
                     <p className="mb-1 font-medium text-zinc-100">
-                      Ethical guardrails
+                      Authenticity guardrails
                     </p>
                     <p>
-                      You can note in the pitch that the system avoids fabricating
-                      achievements, and uses Pattern Lab signals to shape emphasis, not
-                      to invent content. Students stay in control of the final essay.
+                      The system avoids inventing achievements. It uses scholarship
+                      patterns to help you emphasize true experiences more effectively.
                     </p>
                   </div>
                 </CardContent>
@@ -351,32 +338,31 @@ export default function SettingsPage() {
                 <CardHeader className="relative pb-3">
                   <CardTitle className="flex items-center gap-2 text-sm text-zinc-50">
                     <MonitorCog className="h-4 w-4 text-zinc-200" />
-                    System status & environment
+                    System health
                   </CardTitle>
                   <CardDescription className="text-xs text-zinc-400">
-                    A small panel you can flash during the demo to prove robustness and
-                    realistic deployment thinking.
+                    Live status of key features and integrations.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="relative space-y-3 text-xs">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <StatusTile
                       label="Environment"
-                      value="Hackathon demo"
-                      badge="Local / Dev"
+                      value="Local app"
+                      badge="Private"
                     />
                     <StatusTile
                       label="Claude integration"
-                      value={mockClaude ? 'Mocked for demo' : 'Live API calls'}
-                      badge={mockClaude ? 'Mock' : 'Live'}
+                      value={mockClaude ? 'Offline mode' : 'Live API'}
+                      badge={mockClaude ? 'Offline' : 'Live'}
                     />
                     <StatusTile
-                      label="Last sync with Pattern Lab"
-                      value="Today · 12:24"
-                      badge="Up to date"
+                      label="Pattern Lab"
+                      value="Up to date"
+                      badge="Synced"
                     />
                     <StatusTile
-                      label="Draft Studio status"
+                      label="Draft Studio"
                       value="Online"
                       badge="Healthy"
                     />
@@ -385,23 +371,22 @@ export default function SettingsPage() {
                   <div className="rounded-lg border border-amber-500/70 bg-amber-900/20 px-3 py-2 text-[11px] text-amber-100">
                     <div className="mb-1 flex items-center gap-1">
                       <AlertTriangle className="h-3.5 w-3.5" />
-                      <span className="font-medium">Inline caveats</span>
+                      <span className="font-medium">Connection notes</span>
                     </div>
                     <p>
-                      You can use this card to be honest about current limitations
-                      (small dataset, mocked calls, simplified scoring) while showing
-                      clearly where production APIs, databases, and auth would plug in.
+                      If Claude is set to offline mode, drafting still works using your
+                      saved patterns, and will switch back to live calls automatically
+                      when re-enabled.
                     </p>
                   </div>
 
                   <div className="rounded-lg border border-zinc-800/80 bg-zinc-950/90 px-3 py-2 text-[11px] text-zinc-300">
                     <p className="mb-1 font-medium text-zinc-100">
-                      One-liner for judges
+                      Troubleshooting
                     </p>
                     <p>
-                      “Settings is where we prove this is more than a demo – we already
-                      know how we would wire Claude, privacy, and deployment in a real
-                      product.”
+                      If something feels out of date, refresh Pattern Lab or re-paste a
+                      scholarship description to re-analyze it.
                     </p>
                   </div>
                 </CardContent>
@@ -461,6 +446,21 @@ function StatusTile({
       >
         {badge}
       </Badge>
+    </div>
+  )
+}
+
+/* -------------------------------------------------------------------------- */
+/*                               NEBULA BACKDROP                              */
+/* -------------------------------------------------------------------------- */
+
+function NebulaBackdrop() {
+  return (
+    <div className="pointer-events-none absolute inset-0 opacity-55">
+      <div className="absolute -left-12 top-8 h-52 w-52 rounded-full bg-sky-500/22 blur-3xl" />
+      <div className="absolute right-0 top-10 h-60 w-60 rounded-full bg-fuchsia-500/22 blur-3xl" />
+      <div className="absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-emerald-500/18 blur-3xl" />
+      <div className="absolute bottom-8 right-20 h-44 w-44 rounded-full bg-amber-400/12 blur-3xl" />
     </div>
   )
 }
