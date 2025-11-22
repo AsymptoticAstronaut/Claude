@@ -13,8 +13,8 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Claude Project',
-  description: 'Yasser Noori\'s Personal website.',
+  title: 'ScholarQuant',
+  description: '...',
 }
 
 const geist = Geist({ variable: '--font-geist', subsets: ['latin'] })
