@@ -244,7 +244,8 @@ const EXPERIMENT_LOG: ExperimentEvent[] = [
   {
     time: '12:18',
     label: 'Clustered scholarships into personality groups using embeddings.',
-    effect: 'Improved matching by separating Merit, Community, STEM, and Access styles.',
+    effect:
+      'Improved matching by separating Merit, Community, STEM, and Access styles.',
   },
   {
     time: '12:07',
@@ -273,16 +274,18 @@ const DIMENSION_COLORS: Record<DimensionId, string> = {
   adversity: 'hsl(0 90% 58%)',
 }
 
-const DIMENSION_ICONS: Record<DimensionId, React.ComponentType<{ className?: string }>> =
-  {
-    academics: GraduationCap,
-    leadership: Crown,
-    community: Users,
-    need: BadgeDollarSign,
-    innovation: Lightbulb,
-    research: Microscope,
-    adversity: ShieldAlert,
-  }
+const DIMENSION_ICONS: Record<
+  DimensionId,
+  React.ComponentType<{ className?: string }>
+> = {
+  academics: GraduationCap,
+  leadership: Crown,
+  community: Users,
+  need: BadgeDollarSign,
+  innovation: Lightbulb,
+  research: Microscope,
+  adversity: ShieldAlert,
+}
 
 function typeLabel(t: ScholarshipType) {
   const map: Record<ScholarshipType, string> = {
@@ -335,8 +338,8 @@ export default function PatternLabPage() {
               Scholarship Patterns
             </h1>
             <p className="text-xs text-zinc-500">
-              Explore what different scholarships value, which phrases winners use,
-              and how dimensions tend to appear together.
+              Explore what different scholarships value, which themes show up in
+              winning essays, and how dimensions tend to appear together.
             </p>
           </div>
 
@@ -393,8 +396,8 @@ export default function PatternLabPage() {
                     Priority heatmap by scholarship type
                   </CardTitle>
                   <CardDescription className="text-xs text-zinc-400">
-                    Each row is a scholarship type. Hotter cells mean that dimension is
-                    more commonly emphasized in that type.
+                    Each row is a scholarship type. Hotter cells mean that dimension
+                    is more commonly emphasized in that type.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="relative space-y-3 text-xs">
@@ -445,7 +448,9 @@ export default function PatternLabPage() {
                     <table className="min-w-full border-collapse text-[11px]">
                       <thead>
                         <tr className="border-b border-zinc-800 bg-zinc-950/90">
-                          <th className="px-3 py-2 text-left text-zinc-500">Type</th>
+                          <th className="px-3 py-2 text-left text-zinc-500">
+                            Type
+                          </th>
                           {DIMENSIONS.map((dim) => (
                             <th
                               key={dim.id}
@@ -461,7 +466,9 @@ export default function PatternLabPage() {
                           <tr
                             key={t}
                             className={`border-t border-zinc-800/80 ${
-                              t === selectedType ? 'bg-zinc-900/90' : 'bg-zinc-950/80'
+                              t === selectedType
+                                ? 'bg-zinc-900/90'
+                                : 'bg-zinc-950/80'
                             }`}
                           >
                             <td className="px-3 py-2 align-top text-zinc-200">
@@ -471,7 +478,10 @@ export default function PatternLabPage() {
                               const value = TYPE_DIMENSION_MATRIX[t][dim.id]
                               const intensity = Math.round(value * 100)
                               return (
-                                <td key={dim.id} className="px-3 py-2 align-middle">
+                                <td
+                                  key={dim.id}
+                                  className="px-3 py-2 align-middle"
+                                >
                                   <div className="flex items-center gap-1.5">
                                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-900">
                                       <div
@@ -507,9 +517,9 @@ export default function PatternLabPage() {
                       What this means for your application
                     </p>
                     <p>
-                      If a type is hot on a dimension, you should put that evidence
-                      early and clearly in your essay. If it’s cooler, mention it only
-                      if it supports your main message.
+                      If a type is hot on a dimension, put that evidence early and
+                      clearly in your essay. If it’s cooler, mention it only if it
+                      supports your main message.
                     </p>
                   </div>
                 </CardContent>
@@ -683,7 +693,9 @@ function ForceCorrelationCard({
   dimensions: Dimension[]
   correlations: Correlation[]
 }) {
-  const [active, setActive] = useState<Correlation | null>(null)
+  // ACTIVE CAN BE EITHER A CORRELATION (sidebar) OR A FORCE LINK (svg hover)
+  const [active, setActive] = useState<ForceLink | Correlation | null>(null)
+
   const [nodes, setNodes] = useState<ForceNode[]>([])
   const [links, setLinks] = useState<ForceLink[]>([])
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -704,6 +716,7 @@ function ForceCorrelationCard({
         sim[k] = BASE_SIM
       })
     })
+
     correlations.forEach((c) => {
       const [a, b] = c.id.split('_') as DimensionId[]
       const k = a < b ? `${a}_${b}` : `${b}_${a}`
@@ -726,10 +739,12 @@ function ForceCorrelationCard({
         const a = dimensions[i].id
         const b = dimensions[j].id
         const k = a < b ? `${a}_${b}` : `${b}_${a}`
+
         const explicit = correlations.find((c) => {
           const [x, y] = c.id.split('_')
           return (x === a && y === b) || (x === b && y === a)
         })
+
         allLinks.push({
           id: k,
           label:
@@ -767,7 +782,12 @@ function ForceCorrelationCard({
     setNodes([...initNodes])
     setLinks([...allLinks])
 
-    return () => simForce.stop()
+    // IMPORTANT TS FIX:
+    // d3-force stop() returns the Simulation object, so we must NOT return it
+    // from cleanup. Wrap in block / void to return void.
+    return () => {
+      void simForce.stop()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dimensions, correlations])
 
@@ -971,7 +991,13 @@ function ForceCorrelationCard({
                         const Icon = DIMENSION_ICONS[n.id]
                         return (
                           <g key={n.id}>
-                            <circle cx={n.x} cy={n.y} r="24" fill={c} opacity="0.14" />
+                            <circle
+                              cx={n.x}
+                              cy={n.y}
+                              r="24"
+                              fill={c}
+                              opacity="0.14"
+                            />
                             <circle
                               cx={n.x}
                               cy={n.y}
@@ -980,7 +1006,13 @@ function ForceCorrelationCard({
                               stroke={c}
                               strokeWidth="2.5"
                             />
-                            <circle cx={n.x} cy={n.y} r="7" fill={c} opacity="0.8" />
+                            <circle
+                              cx={n.x}
+                              cy={n.y}
+                              r="7"
+                              fill={c}
+                              opacity="0.8"
+                            />
                             <foreignObject
                               x={n.x - 6}
                               y={n.y - 6}
@@ -1017,7 +1049,9 @@ function ForceCorrelationCard({
                   />
                   <p className="font-medium text-zinc-100">{active.label}</p>
                 </div>
-                <p className="mt-0.5 text-zinc-400">r ≈ {active.value.toFixed(2)}</p>
+                <p className="mt-0.5 text-zinc-400">
+                  r ≈ {active.value.toFixed(2)}
+                </p>
                 <p className="mt-1 text-zinc-500">{active.explanation}</p>
               </div>
             )}
