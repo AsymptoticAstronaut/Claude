@@ -48,6 +48,10 @@ type DraftRequestPayload = {
 
   // GREEN text segments extracted from editor
   lockedSegments?: string[]
+
+  // Optional: serialized directives from client (ignored if absent)
+  draftWithDirectives?: string
+  userMemory?: string
 }
 
 const extractTextFromClaude = (content: Array<{ text?: string }> = []) =>
@@ -85,6 +89,7 @@ export async function POST(request: Request) {
 
   const positiveSignals = body.positiveSignals?.trim() ?? ''
   const negativeSignals = body.negativeSignals?.trim() ?? ''
+  const userMemory = body.userMemory?.trim() ?? body.userMemory ?? body.userMemory ?? ''
   const memoryNotes = Array.isArray(body.revisionRequests)
     ? body.revisionRequests.map((r) => ({
         paragraphIndex: r.paragraphIndex ?? null,
@@ -108,16 +113,18 @@ export async function POST(request: Request) {
       constraints,
     },
     student: studentProfile, // FULL JSON
-    scholarship, // FULL JSON (priorities, weights, stories, winnerPatterns, dos/donts, etc.)
+    scholarship, // FULL JSON
     inputs: {
       baseStory,
       positiveSignals,
       negativeSignals,
+      userMemory,
     },
     memoryNotes, // user Memory notes
     iteration: {
       lastDraft: body.lastDraft ?? null,
       workingDraft: body.workingDraft?.trim() ?? '',
+      draftWithDirectives: body.draftWithDirectives?.trim() ?? '',
     },
     lockedSegments, // GREEN spans that must persist verbatim
     context: {
@@ -127,8 +134,23 @@ export async function POST(request: Request) {
     },
   }
 
-  // If no API key, return demo draft (avoid noisy UI errors).
-  if (!process.env.ANTHROPIC_API_KEY) {
+  // --- ENV CHECK ---
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  const isDev = process.env.NODE_ENV === 'development'
+
+  if (!apiKey) {
+    // In dev, return a real error so you see it in the UI/terminal.
+    if (isDev) {
+      return NextResponse.json(
+        {
+          error:
+            'ANTHROPIC_API_KEY is not set. Add it to .env.local in project root and restart dev server.',
+        },
+        { status: 500 }
+      )
+    }
+
+    // In prod, keep UI clean and fall back.
     return NextResponse.json({
       draft: DEMO_DRAFT,
       metadata: {
@@ -160,8 +182,8 @@ export async function POST(request: Request) {
 
   const userPrompt = [
     'Use the JSON brief below to produce a cohesive scholarship essay draft.',
-    'If workingDraft is non-empty, treat it as the user’s current draft and revise it.',
-    'Otherwise, generate a fresh draft from baseStory.',
+    'If iteration.workingDraft is non-empty, treat it as the user’s current draft and revise it.',
+    'Otherwise, generate a fresh draft from inputs.baseStory.',
     'You must obey all constraints and lockedSegments rules.',
     '',
     'JSON BRIEF:',
@@ -186,12 +208,22 @@ export async function POST(request: Request) {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify(claudeRequest),
     })
   } catch (err) {
+    if (isDev) {
+      return NextResponse.json(
+        {
+          error: 'Network error calling Claude.',
+          details: String(err),
+        },
+        { status: 502 }
+      )
+    }
+
     return NextResponse.json({
       draft: DEMO_DRAFT,
       metadata: { id: 'demo-network', model: 'demo', wordLimit: sanitizedWordLimit },
@@ -200,15 +232,22 @@ export async function POST(request: Request) {
 
   if (!response.ok) {
     const errorPayload = await response.text().catch(() => '')
-    // Return demo draft but include details for logs if needed.
+    if (isDev) {
+      return NextResponse.json(
+        {
+          error: 'Claude API request failed.',
+          details: errorPayload,
+        },
+        { status: response.status }
+      )
+    }
+
     return NextResponse.json({
       draft: DEMO_DRAFT,
       metadata: {
         id: 'demo-fallback',
         model: 'demo',
         wordLimit: sanitizedWordLimit,
-        error: 'Claude API request failed.',
-        details: errorPayload,
       },
     })
   }

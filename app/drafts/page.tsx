@@ -393,6 +393,16 @@ export default function DraftStudioPage() {
       [selectedScholarshipId, scholarshipOptions]
     ) ?? null
 
+  // FULL scholarship object for API + enforcement
+  const selectedScholarshipFull =
+    useMemo(
+      () =>
+        scholarshipsData.find((s) => s.id === selectedScholarshipId) ??
+        scholarshipsData[0] ??
+        null,
+      [selectedScholarshipId, scholarshipsData]
+    ) ?? null
+
   useEffect(() => {
     if (!studentProfiles.length) return
     if (!selectedProfileId) setSelectedProfileId(studentProfiles[0].id)
@@ -543,7 +553,7 @@ export default function DraftStudioPage() {
   useEffect(() => {
     if (!editor) return
     const base = displayedDraft || ''
-editor.commands.setContent(textToHTML(base), { emitUpdate: false })
+    editor.commands.setContent(textToHTML(base), { emitUpdate: false })
     prevEditorTextRef.current = editor.getText()
   }, [editor, draftKey, displayedDraft])
 
@@ -605,7 +615,11 @@ editor.commands.setContent(textToHTML(base), { emitUpdate: false })
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           baseStory: baseStoryDraft,
-          scholarship: selectedScholarship,
+
+          // IMPORTANT: send FULL objects, not just ids
+          scholarship: selectedScholarshipFull ?? selectedScholarship,
+          studentProfile: selectedStudent,
+
           focus,
           wordLimit: Number.isFinite(parsedWordLimit)
             ? parsedWordLimit
@@ -658,7 +672,9 @@ editor.commands.setContent(textToHTML(base), { emitUpdate: false })
 
       setHasGeneratedKeys((prev) => ({ ...prev, [draftKey]: true }))
 
-editor.commands.setContent(textToHTML(nextDraft), { emitUpdate: false })
+      editor.commands.setContent(textToHTML(nextDraft), {
+        emitUpdate: false,
+      })
       reapplyLockedMarks(editor, lockedSegments)
       prevEditorTextRef.current = editor.getText()
     } catch (e) {
@@ -682,11 +698,9 @@ editor.commands.setContent(textToHTML(nextDraft), { emitUpdate: false })
           [draftKey]: DEMO_DRAFT,
         }))
         setHasGeneratedKeys((prev) => ({ ...prev, [draftKey]: true }))
-editor.commands.setContent(textToHTML(DEMO_DRAFT), { emitUpdate: false })
-
-
-
-
+        editor.commands.setContent(textToHTML(DEMO_DRAFT), {
+          emitUpdate: false,
+        })
         prevEditorTextRef.current = editor.getText()
       }
     } finally {
@@ -984,7 +998,6 @@ editor.commands.setContent(textToHTML(DEMO_DRAFT), { emitUpdate: false })
                       />
                     </div>
                   </div>
-
 
                   <Separator className="bg-zinc-800/70" />
 
