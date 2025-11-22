@@ -497,7 +497,6 @@ export default function DraftStudioPage() {
       immediatelyRender: false,
       extensions: [
         StarterKit.configure({
-          history: true,
           heading: false,
           bulletList: false,
           orderedList: false,
